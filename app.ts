@@ -1,5 +1,3 @@
-export { };
-
 declare global {
   var diffDOM: {
     DiffDOM: any,

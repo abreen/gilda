@@ -1,0 +1,32 @@
+body {
+  font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, Ubuntu;
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 2em;
+}
+
+figure {
+  background: whitesmoke;
+  display: flex;
+  flex-direction: column;
+  padding: 1em;
+  gap: 1em;
+}
+
+figcaption {
+  font-style: italic;
+}
+
+pre {
+  margin: 0;
+  line-height: 1.4;
+  overflow-x: hidden;
+}
+
+summary {
+  margin-bottom: 1em;
+}
+
+summary:hover {
+  cursor: pointer;
+}

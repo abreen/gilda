@@ -1,3 +1,17 @@
+export { };
+
+declare global {
+  var diffDOM: {
+    DiffDOM: any,
+    nodeToObj: (val: any) => any
+  }
+  var html_beautify: (code: string, options: any) => any;
+  var js_beautify: (code: string, options: any) => any;
+  var hljs: {
+    highlight: (code: string, options: any) => any;
+  }
+}
+
 // Gilda types
 
 type GildaElement = {
@@ -16,7 +30,7 @@ type StateHook<T> = { value: T; setter: Setter<T> };
 
 function el<T>(
   type: string | Component<T>,
-  props: T | null,
+  props?: T | null,
   ...children: GildaNode[]
 ): GildaElement {
   return { type, props: { ...props, children } };
@@ -148,7 +162,6 @@ class GildaCustomElement extends HTMLElement {
   private hooks: StateHook<any>[] = [];
   private component?: Component<any>;
   private componentType?: string;
-  private container?: HTMLDivElement;
   private shadow?: ShadowRoot;
 
   connectedCallback() {
@@ -158,7 +171,6 @@ class GildaCustomElement extends HTMLElement {
 
     const container = document.createElement("div");
     this.shadow.appendChild(container);
-    this.container = container;
 
     const componentType = this.shadow.host.getAttribute("type") || "";
     this.componentType = componentType;
@@ -176,7 +188,7 @@ class GildaCustomElement extends HTMLElement {
   }
 
   handleUpdate() {
-    if (this.shadow == null || this.component == null) {
+    if (this.shadow == null || this.component == null || this.componentType == null) {
       console.warn("component not mounted, cannot update");
       return;
     }
@@ -195,11 +207,11 @@ class GildaCustomElement extends HTMLElement {
     // replace <div> with its child nodes, eliminating the fragment
     temp.replaceWith(...temp.childNodes);
 
-    updateRenderedOutput(this.componentType, newRoot.outerHTML);
+    updateRenderedOutput(this.componentType, (newRoot as Element).outerHTML);
 
     // TODO preserve event handlers
     const dd = new diffDOM.DiffDOM({
-      preDiffApply: function (info) {
+      preDiffApply: function (info: { node?: Node, newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -209,7 +221,7 @@ class GildaCustomElement extends HTMLElement {
           console.log("preDiffApply2", info);
         }
       },
-      postDiffApply: function (info) {
+      postDiffApply: function (info: { node?: Node, newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -307,7 +319,7 @@ function HelloGilda({ lightness = 200 }: { lightness: number }) {
       { style: `color: rgb(${lightness} ${lightness} ${lightness})` },
       "Hello"
     ),
-    el(HelloGilda, { name, lightness: lightness - 20 })
+    el(HelloGilda, { lightness: lightness - 20 })
   );
 }
 

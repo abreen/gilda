@@ -152,3 +152,26 @@ init(document.getElementById('todo'), Todo);
   </details>
 </figure>
 
+<script>
+function updateRenderedOutput(name, sourceCode) {
+  const els = document.getElementsByTagName('pre');
+  for (let i = 0; i < els.length; i++) {
+    if (els[i].dataset.componentOutput === name) {
+      const prettyCode = html_beautify(sourceCode, {
+        indent_size: '2',
+        brace_style: 'collapse',
+        wrap_line_length: '80'
+      });
+      const highlightedCode = hljs.highlight(prettyCode, {
+        language: 'html',
+      }).value;
+      els[i].innerHTML = highlightedCode;
+      break;
+    }
+  }
+}
+
+addEventListener('update', ({container: {component, domElement}}) => {
+  updateRenderedOutput(component.name, domElement.outerHTML);
+});
+</script>

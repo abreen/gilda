@@ -1,14 +1,14 @@
 export {};
 declare global {
   var diffDOM: {
-    DiffDOM: any;
-    nodeToObj: (val: any) => any;
-  };
+    DiffDOM: any,
+    nodeToObj: (val: any) => any
+  }
   var html_beautify: (code: string, options: any) => any;
   var js_beautify: (code: string, options: any) => any;
   var hljs: {
     highlight: (code: string, options: any) => any;
-  };
+  }
 }
 
 type GildaElement = {
@@ -107,12 +107,15 @@ function useState<T>(initialValue: T): [T, Setter<T>] {
 
   if (!hook) {
     hook = {
-      value: initialValue,
+      value: initialValue
     } as StateHook<T>;
 
     hook.setter = (newValue) => {
       hook.value = newValue;
-      triggerUpdate();
+      if (currentContainer == null) {
+        throw new Error('no current component');
+      }
+      triggerUpdate(currentContainer);
     };
 
     currentStateHooks[hookCounter] = hook;
@@ -122,27 +125,10 @@ function useState<T>(initialValue: T): [T, Setter<T>] {
   return [hook.value, hook.setter];
 }
 
-function triggerUpdate() {
+function triggerUpdate(container: Container<any>) {
   const event = new Event("update");
+  (event as Event & {container: Container<any>}).container = container;
   dispatchEvent(event);
-}
-
-function getComponentFromWindow(
-  name?: string | null
-): Component<any> | undefined {
-  if (name == null || name == "") {
-    return;
-  }
-  return (window as Record<string, any>)[name] as Component<any>;
-}
-
-function attrsToProps(el: Element) {
-  const props: { [key: string]: any } = {};
-  for (let i = 0; i < el.attributes.length; i++) {
-    const attr = el.attributes[i];
-    props[attr.name] = attr.value;
-  }
-  return props;
 }
 
 function init(el: Element, fn: Component<any>) {
@@ -153,10 +139,10 @@ function init(el: Element, fn: Component<any>) {
 
 let hookCounter = 0;
 let currentStateHooks: StateHook<any>[] = [];
+let currentContainer: Container<any> | null = null;
 
 class Container<T> {
   private component: Component<any>;
-  private componentName: string;
   private domElement: Element;
   private hooks: StateHook<any>[];
 
@@ -167,10 +153,9 @@ class Container<T> {
     }
 
     this.component = fn;
-    this.componentName = functionName;
 
     if (el == null) {
-      throw new Error("a DOM node container is required");
+      throw new Error('a DOM node container is required');
     }
 
     el.replaceChildren();
@@ -197,14 +182,12 @@ class Container<T> {
     const temp = document.createElement("div");
     const newRoot = render(element, temp);
     // replace <div> with its child nodes, eliminating the fragment
-
+    
     temp.replaceWith(...Array.from(temp.childNodes));
-
-    updateRenderedOutput(this.componentName, (newRoot as Element).outerHTML);
 
     // TODO preserve event handlers
     const dd = new diffDOM.DiffDOM({
-      preDiffApply: function (info: { node?: Node; newNode?: Node }) {
+      preDiffApply: function (info: { node?: Node, newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -214,7 +197,7 @@ class Container<T> {
           console.log("preDiffApply2", info);
         }
       },
-      postDiffApply: function (info: { node?: Node; newNode?: Node }) {
+      postDiffApply: function (info: { node?: Node, newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -223,7 +206,7 @@ class Container<T> {
         if (node != null && node.nodeName.toLowerCase() === "input") {
           console.log("postDiffApply2", info);
         }
-      },
+      }
     });
 
     const currentRoot = this.domElement;
@@ -250,42 +233,3 @@ class Container<T> {
     // TODO make sure handlers are preserved using API
   }
 }
-
-// logic just for this Markdown document
-
-function updateRenderedOutput(name: string, sourceCode: string) {
-  const els = document.getElementsByTagName("pre");
-  for (let i = 0; i < els.length; i++) {
-    if (els[i].dataset.componentOutput === name) {
-      const prettyCode = html_beautify(sourceCode, {
-        indent_size: "2",
-        brace_style: "collapse",
-        wrap_line_length: "80",
-      });
-      els[i].innerText = prettyCode;
-      break;
-    }
-  }
-}
-
-document.addEventListener("DOMContentLoaded", async () => {
-  const els = document.getElementsByTagName("pre");
-  for (let i = 0; i < els.length; i++) {
-    const pre = els[i];
-    const name = pre.dataset.componentSource;
-    const component = getComponentFromWindow(name);
-
-    if (typeof component === "function") {
-      const sourceCode = String(component);
-      const prettyCode = js_beautify(sourceCode, {
-        indent_size: "2",
-        brace_style: "collapse",
-        wrap_line_length: "80",
-      });
-      const highlightedCode = hljs.highlight(prettyCode, {
-        language: "javascript",
-      }).value;
-      els[i].innerHTML = highlightedCode;
-    }
-  }
-});

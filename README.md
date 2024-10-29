@@ -25,6 +25,26 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
     A recursive component that repeats and fades text
   </figcaption>
 
+  <script>
+function HelloGilda({ lightness = 200 }: { lightness: number }) {
+  if (lightness <= 0) {
+    return el("strong", null, "Gilda");
+  }
+  if (lightness > 200) {
+    lightness = 200;
+  }
+
+  return fragment(
+    el(
+      "span",
+      { style: `color: rgb(${lightness} ${lightness} ${lightness})` },
+      "Hello"
+    ),
+    el(HelloGilda, { lightness: lightness - 20 })
+  );
+}
+  </script>
+
   <gilda-root type="HelloGilda"></gilda-root>
 
   <pre data-component-output="HelloGilda"></pre>
@@ -39,6 +59,28 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
   <figcaption>
     A component that stores a UNIX timestamp in state
   </figcaption>
+
+  <script>
+function Clock() {
+  const [time, setTime] = useState<number>(Date.now());
+  // TODO useEffect() for cleanup
+  return el(
+    "p",
+    null,
+    fragment("Current UNIX time: ", el("strong", null, `${time}`)),
+    el("br"),
+    el(
+      "button",
+      {
+        onClick: () => {
+          setTime(Date.now());
+        }
+      },
+      "Update"
+    )
+  );
+}
+  </script>
   
   <gilda-root type="Clock"></gilda-root>
 
@@ -54,6 +96,45 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
   <figcaption>
     A component that manages a to-do list
   </figcaption>
+
+  <script>
+function Todo() {
+  const [input, setInput] = useState<string>("");
+  const [items, setItems] = useState<{ done: boolean; label: string }[]>([
+    { done: false, label: "First item" },
+    { done: false, label: "Second item" }
+  ]);
+
+  function handleChange(e: InputEvent) {
+    const target: HTMLInputElement | null =
+      e.target != null ? (e.target as HTMLInputElement) : null;
+    setInput(target?.value || "");
+  }
+
+  function handleClick() {
+    setItems([...items, { done: false, label: input }]);
+    setInput("");
+  }
+
+  return fragment(
+    el("ol", null, ...items.map((item) => el("li", null, item.label))),
+    el("label", { for: "new-todo" }, "New todo"),
+    el("input", {
+      type: "text",
+      id: "new-todo",
+      value: input,
+      onKeyUp: handleChange
+    }),
+    el(
+      "button",
+      {
+        onClick: handleClick
+      },
+      "Add"
+    )
+  );
+}
+  </script>
 
   <gilda-root type="Todo"></gilda-root>
 

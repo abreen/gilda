@@ -41,7 +41,7 @@ jobs:
         run: npm install -g typescript
 
       - name: Compile TypeScript
-        run: tsc app.ts --module preserve --target es6 --lib ES2023,DOM
+        run: tsc app.ts --lib es2023,dom --module preserve --target es2023
 
       - name: Replace $$$BASE_PATH$$$ with /gilda
         run: find . -name "*.html" -exec sed -i 's/\$\$\$BASE_PATH\$\$\$/\/gilda/g' {} +

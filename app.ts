@@ -36,7 +36,7 @@ function el<T>(
 }
 
 function fragment(...children: GildaNode[]): GildaNode {
-  return el<never>("", null, ...children);
+  return el<?>("", null, ...children);
 }
 
 function render(root: GildaNode, parentNode?: Node): Node {
@@ -144,7 +144,8 @@ function getComponentFromWindow(
 
 function attrsToProps(el: Element) {
   const props: { [key: string]: any } = {};
-  for (let attr of el.attributes) {
+  for (let i = 0; i < el.attributes.length; i++) {
+    const attr = el.attributes[i];
     props[attr.name] = attr.value;
   }
   return props;

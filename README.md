@@ -2,17 +2,21 @@
 
 A miniature implementation of R\*\*\*\*.
 
-## The `<gilda-root>` element
+## Component
 
-In the `type` attribute, a Component name must be specified. A Component is any function that returns an Element (or text).
+A Component is any function that returns an Element, or any renderable content, like strings. 
 
-## `el()`
+### The `el()` function
 
-Create an Element, a simple representation of UI that doesn't involve the DOM. An Element can refer directly to an HTML element like `<p>`, or recursively to a Component (which eventually returns HTML).
+Create an Element, a simple representation of a piece of UI that doesn't involve actual DOM nodes. An Element can refer directly to an HTML element like `<p>`, or recursively to a Component (which eventually returns HTML).
 
 ### `fragment()`
 
 A way to return more than one Element at once without introducing a new parent Element.
+
+## `init(domNode, Component)`
+
+Treat the DOM node as a container and initialize the Component into it. As state changes in the instance, Gilda only modifies the parts of the DOM that need to change.
 
 ## `render()`
 
@@ -24,6 +28,8 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
   <figcaption>
     A recursive component that repeats and fades text
   </figcaption>
+
+  <div id="hello-gilda"></div>
 
   <script>
 function HelloGilda({ lightness = 200 }: { lightness: number }) {
@@ -43,9 +49,8 @@ function HelloGilda({ lightness = 200 }: { lightness: number }) {
     el(HelloGilda, { lightness: lightness - 20 })
   );
 }
+init(document.getElementById('hello-gilda'), HelloGilda);
   </script>
-
-  <gilda-root type="HelloGilda"></gilda-root>
 
   <pre data-component-output="HelloGilda"></pre>
 
@@ -59,6 +64,8 @@ function HelloGilda({ lightness = 200 }: { lightness: number }) {
   <figcaption>
     A component that stores a UNIX timestamp in state
   </figcaption>
+
+  <div id="clock"></div>
 
   <script>
 function Clock() {
@@ -80,10 +87,9 @@ function Clock() {
     )
   );
 }
+init(document.getElementById('clock'), Clock);
   </script>
   
-  <gilda-root type="Clock"></gilda-root>
-
   <pre data-component-output="Clock"></pre>
 
   <details>
@@ -96,6 +102,8 @@ function Clock() {
   <figcaption>
     A component that manages a to-do list
   </figcaption>
+
+  <div id="todo"></div>
 
   <script>
 function Todo() {
@@ -134,9 +142,8 @@ function Todo() {
     )
   );
 }
+init(document.getElementById('todo'), Todo);
   </script>
-
-  <gilda-root type="Todo"></gilda-root>
 
   <pre data-component-output="Todo"></pre>
 

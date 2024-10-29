@@ -11,8 +11,6 @@ declare global {
   }
 }
 
-// Gilda types
-
 type GildaElement = {
   type: Component<any> | string;
   props: { [key: string]: any };
@@ -24,8 +22,6 @@ type Component<T> = (props: T) => GildaNode;
 
 type Setter<T> = (newValue: T) => void;
 type StateHook<T> = { value: T; setter: Setter<T> };
-
-// Gilda API
 
 function el<T>(
   type: string | Component<T>,
@@ -106,6 +102,8 @@ function render(root: GildaNode, parentNode?: Node): Node {
   }
 }
 
+let currentHooks: StateHook<any>[] = [];
+let hookCounter = 0;
 function useState<T>(initialValue: T): [T, Setter<T>] {
   let hook = currentHooks[hookCounter];
 
@@ -125,8 +123,6 @@ function useState<T>(initialValue: T): [T, Setter<T>] {
   hookCounter++;
   return [hook.value, hook.setter];
 }
-
-// Helper functions
 
 function triggerUpdate() {
   const event = new Event("update");
@@ -151,10 +147,14 @@ function attrsToProps(el: Element) {
   return props;
 }
 
-// Gilda runtime
+function gilda(node: Node, component: Component<any>) {
 
-let currentHooks: StateHook<any>[] = [];
-let hookCounter = 0;
+}
+
+class Instance {
+  private stateHooks: StateHook<any>[];
+
+}
 
 class GildaCustomElement extends HTMLElement {
   static observedAttributes = ["type"];

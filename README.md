@@ -1,4 +1,4 @@
-# `gilda`
+# [`gilda`](https://github.com/abreen/gilda)
 
 A miniature implementation of R\*\*\*\*.
 

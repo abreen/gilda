@@ -177,7 +177,8 @@ class GildaCustomElement extends HTMLElement {
 
     const component = getComponentFromWindow(componentType);
     if (typeof component !== "function") {
-      throw new Error(`undefined Component: ${componentType}`);
+      console.error(`undefined Component: ${componentType}`);
+      return;
     }
     this.component = component;
 

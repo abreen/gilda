@@ -172,7 +172,7 @@ class Container<T> {
 
   handleUpdate() {
     // TODO only render the component that changed & its children
-
+    currentContainer = this;
     currentStateHooks = this.hooks;
     hookCounter = 0;
 

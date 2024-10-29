@@ -1,14 +1,14 @@
 export {};
 declare global {
   var diffDOM: {
-    DiffDOM: any,
-    nodeToObj: (val: any) => any
-  }
+    DiffDOM: any;
+    nodeToObj: (val: any) => any;
+  };
   var html_beautify: (code: string, options: any) => any;
   var js_beautify: (code: string, options: any) => any;
   var hljs: {
     highlight: (code: string, options: any) => any;
-  }
+  };
 }
 
 type GildaElement = {
@@ -102,14 +102,12 @@ function render(root: GildaNode, parentNode?: Node): Node {
   }
 }
 
-let currentHooks: StateHook<any>[] = [];
-let hookCounter = 0;
 function useState<T>(initialValue: T): [T, Setter<T>] {
-  let hook = currentHooks[hookCounter];
+  let hook = currentStateHooks[hookCounter];
 
   if (!hook) {
     hook = {
-      value: initialValue
+      value: initialValue,
     } as StateHook<T>;
 
     hook.setter = (newValue) => {
@@ -117,7 +115,7 @@ function useState<T>(initialValue: T): [T, Setter<T>] {
       triggerUpdate();
     };
 
-    currentHooks[hookCounter] = hook;
+    currentStateHooks[hookCounter] = hook;
   }
 
   hookCounter++;
@@ -147,41 +145,40 @@ function attrsToProps(el: Element) {
   return props;
 }
 
-function gilda(node: Node, component: Component<any>) {
-
+function init(el: Element, fn: Component<any>) {
+  // remove any children from container element
+  el.replaceChildren();
+  new Container(el, fn);
 }
 
-class Instance {
-  private stateHooks: StateHook<any>[];
+let hookCounter = 0;
+let currentStateHooks: StateHook<any>[] = [];
 
-}
+class Container<T> {
+  private component: Component<any>;
+  private componentName: string;
+  private domElement: Element;
+  private hooks: StateHook<any>[];
 
-class GildaCustomElement extends HTMLElement {
-  static observedAttributes = ["type"];
+  constructor(el: Element, fn: Component<T>) {
+    const functionName = fn.name;
+    if (typeof fn !== "function") {
+      throw new Error(`undefined Component: ${functionName}`);
+    }
 
-  private hooks: StateHook<any>[] = [];
-  private component?: Component<any>;
-  private componentType?: string;
-  private shadow?: ShadowRoot;
+    this.component = fn;
+    this.componentName = functionName;
 
-  connectedCallback() {
+    if (el == null) {
+      throw new Error("a DOM node container is required");
+    }
+
+    el.replaceChildren();
+    this.domElement = el;
+
     this.hooks = [];
 
-    this.shadow = this.attachShadow({ mode: "open" });
-
-    const container = document.createElement("div");
-    this.shadow.appendChild(container);
-
-    const componentType = this.shadow.host.getAttribute("type") || "";
-    this.componentType = componentType;
-
-    const component = getComponentFromWindow(componentType);
-    if (typeof component !== "function") {
-      console.error(`undefined Component: ${componentType}`);
-      return;
-    }
-    this.component = component;
-
+    // update for the initial render
     this.handleUpdate();
 
     // further updates are caused by the 'update' event
@@ -189,31 +186,25 @@ class GildaCustomElement extends HTMLElement {
   }
 
   handleUpdate() {
-    if (this.shadow == null || this.component == null || this.componentType == null) {
-      console.warn("component not mounted, cannot update");
-      return;
-    }
-
     // TODO only render the component that changed & its children
 
-    currentHooks = this.hooks;
+    currentStateHooks = this.hooks;
     hookCounter = 0;
 
-    const domProps = attrsToProps(this.shadow.host);
-    const element = this.component(domProps);
+    const element = this.component({});
 
     // temporary <div> to hold nodes in fragment
     const temp = document.createElement("div");
     const newRoot = render(element, temp);
     // replace <div> with its child nodes, eliminating the fragment
-    
+
     temp.replaceWith(...Array.from(temp.childNodes));
 
-    updateRenderedOutput(this.componentType, (newRoot as Element).outerHTML);
+    updateRenderedOutput(this.componentName, (newRoot as Element).outerHTML);
 
     // TODO preserve event handlers
     const dd = new diffDOM.DiffDOM({
-      preDiffApply: function (info: { node?: Node, newNode?: Node }) {
+      preDiffApply: function (info: { node?: Node; newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -223,7 +214,7 @@ class GildaCustomElement extends HTMLElement {
           console.log("preDiffApply2", info);
         }
       },
-      postDiffApply: function (info: { node?: Node, newNode?: Node }) {
+      postDiffApply: function (info: { node?: Node; newNode?: Node }) {
         const node = info.node;
         const newNode = info.newNode;
         if (newNode != null && newNode.nodeName.toLowerCase() === "input") {
@@ -232,10 +223,10 @@ class GildaCustomElement extends HTMLElement {
         if (node != null && node.nodeName.toLowerCase() === "input") {
           console.log("postDiffApply2", info);
         }
-      }
+      },
     });
 
-    const currentRoot = this.shadow.childNodes[0];
+    const currentRoot = this.domElement;
 
     try {
       const diff = dd.diff(
@@ -252,15 +243,11 @@ class GildaCustomElement extends HTMLElement {
       console.error("failed to diff", error);
 
       // fallback to replacing the entire old root
-      this.shadow.replaceChildren(newRoot);
+      this.domElement.replaceChildren(newRoot);
     }
 
     // TODO fix event handlers getting messed up by the diff
     // TODO make sure handlers are preserved using API
-  }
-
-  constructor() {
-    super();
   }
 }
 
@@ -273,7 +260,7 @@ function updateRenderedOutput(name: string, sourceCode: string) {
       const prettyCode = html_beautify(sourceCode, {
         indent_size: "2",
         brace_style: "collapse",
-        wrap_line_length: "80"
+        wrap_line_length: "80",
       });
       els[i].innerText = prettyCode;
       break;
@@ -282,8 +269,6 @@ function updateRenderedOutput(name: string, sourceCode: string) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
-  customElements.define("gilda-root", GildaCustomElement);
-
   const els = document.getElementsByTagName("pre");
   for (let i = 0; i < els.length; i++) {
     const pre = els[i];
@@ -295,10 +280,10 @@ document.addEventListener("DOMContentLoaded", async () => {
       const prettyCode = js_beautify(sourceCode, {
         indent_size: "2",
         brace_style: "collapse",
-        wrap_line_length: "80"
+        wrap_line_length: "80",
       });
       const highlightedCode = hljs.highlight(prettyCode, {
-        language: "javascript"
+        language: "javascript",
       }).value;
       els[i].innerHTML = highlightedCode;
     }

@@ -32,7 +32,7 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
   <div id="hello-gilda"></div>
 
   <script>
-function HelloGilda({ lightness = 200 }: { lightness: number }) {
+function HelloGilda({ lightness = 200 }) {
   if (lightness <= 0) {
     return el("strong", null, "Gilda");
   }
@@ -107,15 +107,14 @@ init(document.getElementById('clock'), Clock);
 
   <script>
 function Todo() {
-  const [input, setInput] = useState<string>("");
-  const [items, setItems] = useState<{ done: boolean; label: string }[]>([
+  const [input, setInput] = useState("");
+  const [items, setItems] = useState([
     { done: false, label: "First item" },
     { done: false, label: "Second item" }
   ]);
 
-  function handleChange(e: InputEvent) {
-    const target: HTMLInputElement | null =
-      e.target != null ? (e.target as HTMLInputElement) : null;
+  function handleChange(e) {
+    const target = e.target != null ? e.target : null;
     setInput(target?.value || "");
   }
 

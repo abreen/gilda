@@ -1,17 +1,36 @@
 BASE_PATH ?=
 
-install:
-	npm install -g typescript marked
-
-clean:
-	rm -f header.html README.html index.html app.js
+all: app.js index.html
 
 app.js:
 	tsc app.ts --lib es2023,dom --module preserve --target es2023
 
 index.html:
-	sed 's#@@@BASE_PATH@@@#$(BASE_PATH)#g' header.template.html > header.html
-	marked -i README.md -o README.html
-	cat header.html README.html footer.html > index.html
+	sed \
+		's#@@@BASE_PATH@@@#$(BASE_PATH)#g' \
+		header.template.html \
+		> header.html
 
-.PHONY: install clean
+	marked -i README.md -o README.html
+
+	cat header.html README.html footer.html > index.full.html
+
+	html-minifier \
+		--minify-css \
+		--minify-js \
+		--collapse-whitespace \
+		--remove-comments \
+		--remove-attribute-quotes \
+		--sort-attributes \
+		--sort-class-name \
+		index.full.html \
+		--output index.html
+
+install:
+	npm install -g typescript marked html-minifier
+
+clean:
+	rm -f header.html README.html index.html app.js
+
+
+.PHONY: all install clean

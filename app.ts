@@ -110,12 +110,13 @@ function useState<T>(initialValue: T): [T, Setter<T>] {
       value: initialValue
     } as StateHook<T>;
 
+    const container = currentContainer;
+    if (container == null) {
+      throw new Error('useState() must be called during render');
+    }
     hook.setter = (newValue) => {
       hook.value = newValue;
-      if (currentContainer == null) {
-        throw new Error('no current component');
-      }
-      triggerUpdate(currentContainer);
+      triggerUpdate(container);
     };
 
     currentStateHooks[hookCounter] = hook;

@@ -264,8 +264,6 @@ class GildaCustomElement extends HTMLElement {
   }
 }
 
-customElements.define("gilda-root", GildaCustomElement);
-
 // logic just for this Markdown document
 
 function updateRenderedOutput(name: string, sourceCode: string) {
@@ -284,6 +282,8 @@ function updateRenderedOutput(name: string, sourceCode: string) {
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
+  customElements.define("gilda-root", GildaCustomElement);
+
   const els = document.getElementsByTagName("pre");
   for (let i = 0; i < els.length; i++) {
     const pre = els[i];

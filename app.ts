@@ -36,7 +36,7 @@ function el<T>(
 }
 
 function fragment(...children: GildaNode[]): GildaNode {
-  return el<?>("", null, ...children);
+  return el<any>("", null, ...children);
 }
 
 function render(root: GildaNode, parentNode?: Node): Node {

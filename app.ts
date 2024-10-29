@@ -206,7 +206,7 @@ class GildaCustomElement extends HTMLElement {
     const newRoot = render(element, temp);
     // replace <div> with its child nodes, eliminating the fragment
     
-    temp.replaceWith(Array.from(temp.childNodes));
+    temp.replaceWith(...Array.from(temp.childNodes));
 
     updateRenderedOutput(this.componentType, (newRoot as Element).outerHTML);
 

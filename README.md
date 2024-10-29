@@ -67,7 +67,7 @@ init(document.getElementById('hello-gilda'), HelloGilda);
 
   <div id="clock"></div>
 
-  <script defer>
+  <script>
 function Clock() {
   const [time, setTime] = useState<number>(Date.now());
   // TODO useEffect() for cleanup
@@ -105,7 +105,7 @@ init(document.getElementById('clock'), Clock);
 
   <div id="todo"></div>
 
-  <script defer>
+  <script>
 function Todo() {
   const [input, setInput] = useState("");
   const [items, setItems] = useState([

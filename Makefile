@@ -26,11 +26,13 @@ index.html:
 		index.full.html \
 		--output index.html
 
+	rm -f header.html README.html index.full.html
+
 install:
 	npm install -g typescript marked html-minifier
 
 clean:
-	rm -f header.html README.html index.html app.js
+	rm -f header.html README.html index.full.html index.html app.js
 
 
 .PHONY: all install clean

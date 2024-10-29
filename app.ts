@@ -164,11 +164,8 @@ class Container<T> {
 
     this.hooks = [];
 
-    // update for the initial render
-    this.handleUpdate();
-
-    // further updates are caused by the 'update' event
     addEventListener("update", this.handleUpdate.bind(this));
+    triggerUpdate(this);
   }
 
   handleUpdate() {

@@ -69,7 +69,7 @@ init(document.getElementById('hello-gilda'), HelloGilda);
 
   <script>
 function Clock() {
-  const [time, setTime] = useState<number>(Date.now());
+  const [time, setTime] = useState(Date.now());
   // TODO useEffect() for cleanup
   return el(
     "p",

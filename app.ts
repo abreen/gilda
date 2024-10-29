@@ -180,7 +180,6 @@ class Container<T> {
     const temp = document.createElement("div");
     const newRoot = render(element, temp);
     // replace <div> with its child nodes, eliminating the fragment
-    
     temp.replaceWith(...Array.from(temp.childNodes));
 
     // TODO preserve event handlers
@@ -207,17 +206,17 @@ class Container<T> {
       }
     });
 
-    const currentRoot = this.domElement;
+    // create a <div> container for diffing against this.domElement
+    const tempDiv = document.createElement('div');
+    tempDiv.appendChild(newRoot);
 
     try {
       const diff = dd.diff(
-        diffDOM.nodeToObj(currentRoot),
-        diffDOM.nodeToObj(newRoot)
+        diffDOM.nodeToObj(this.domElement),
+        diffDOM.nodeToObj(tempDiv)
       );
 
-      console.log("diff", diff);
-
-      if (!dd.apply(currentRoot, diff)) {
+      if (!dd.apply(this.domElement, diff)) {
         throw new Error();
       }
     } catch (error) {

@@ -41,7 +41,7 @@ jobs:
         run: npm install -g typescript
 
       - name: Build app.js and index.html
-        run: make app.js index.html
+        run: BASE_PATH=/gilda make app.js index.html
 
       - name: Setup Pages
         uses: actions/configure-pages@v5

@@ -31,7 +31,7 @@ Convert Elements into actual DOM nodes. This involves repeatedly calling Compone
 
   <div id="hello-gilda"></div>
 
-  <script>
+  <script defer>
 function HelloGilda({ lightness = 200 }) {
   if (lightness <= 0) {
     return el("strong", null, "Gilda");
@@ -67,7 +67,7 @@ init(document.getElementById('hello-gilda'), HelloGilda);
 
   <div id="clock"></div>
 
-  <script>
+  <script defer>
 function Clock() {
   const [time, setTime] = useState<number>(Date.now());
   // TODO useEffect() for cleanup
@@ -105,7 +105,7 @@ init(document.getElementById('clock'), Clock);
 
   <div id="todo"></div>
 
-  <script>
+  <script defer>
 function Todo() {
   const [input, setInput] = useState("");
   const [items, setItems] = useState([
